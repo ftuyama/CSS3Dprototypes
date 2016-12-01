@@ -1,5 +1,6 @@
 toggle3d.checked = true;
 toggleview.checked = true;
+online.checked = true;
 
 // Keyboard input (see http://xem.github.io/articles/#jsgamesinputs)
 u = r = d = l = 0;
@@ -8,7 +9,7 @@ onkeydown = e => t(e, 1);
 
 // Scene
 angle_x = angle_y = angle_z = 0; // rad
-pos_x = -1700;
+pos_x = -1740;
 pos_y = -1500;
 speed = 0;
 max_speed = 18;
@@ -16,6 +17,9 @@ max_speed = 18;
 // Another player
 pos_x2 = -1650;
 pos_y2 = -1500;
+
+i = 0;
+initWebSocket();
 
 // Loop
 setInterval(function() {
@@ -39,7 +43,10 @@ setInterval(function() {
     }
 
     pos_y += speed * Math.cos(angle_z);
-    pos_x += speed * Math.sin(angle_z)
+    pos_x += speed * Math.sin(angle_z);
+
+    if (i++ % 10 == 0 && online.checked)
+        sendMsg(pos_x + ',' + pos_y);
 
     scene.style.transform = "rotateZ(" + angle_z + "rad) translateX(" + pos_x + "px) translateY(" + pos_y + "px)";
     kartwrapper.style.transform = "translateX(" + (-pos_x - 15) + "px) translateY(" + (-pos_y - 15) + "px) translateZ(14px) rotateZ(" + -angle_z + "rad)";

@@ -11,25 +11,24 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <!-- Jquery core JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <!-- Util -->
+    <script src="util.js"></script>
 
     <!-- Navbar -->
     <div id="navbar"></div>
-    <script>
-        $("#navbar").load('/navbar.html');
-        $("html").click(function() {
-            $('body').css('background-image', "url(background.1.png)");
-        });
-    </script>
     <!-- Navbar -->
 </head>
 
 <body>
+    <!-- Snackbar Messages -->
+    <div id="snackbar"></div>
     <!-- Game Screen Environment -->
     <div id="game">
         <div class="well">
             <h2>Mario Kart Online</h2>
             <label for=toggle3d>3D</label><input type=checkbox id=toggle3d checked>
             <label for=toggleview>3<sup>rd</sup> person</label><input type=checkbox id=toggleview checked>
+            <label for=online>Online</label><input type=checkbox id=online checked>
             <div id=viewport>
                 <div id=camera>
                     <div id=scenewrapper>
@@ -44,7 +43,9 @@
             </div>
             <audio src=music.mp3 loop controls></audio>
         </div>
+        <link href='snackbar.css' rel='stylesheet' type='text/css'>
         <link href='engine.css' rel='stylesheet' type='text/css'>
+        <script src="socketCLI.js"></script>
         <script src="engine.js"></script>
     </div>
     <!-- Game Screen Environment -->

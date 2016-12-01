@@ -18,10 +18,6 @@ body {
     text-align: center;
 }
 
-#navbar {
-    z-index: 1000;
-}
-
 #game {
     padding-top: 100px;
     padding-left: 400px;

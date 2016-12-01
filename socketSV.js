@@ -5,17 +5,18 @@
 // New WebSocket Communication
 var WebSocketServer = require('websocket').server;
 var http = require('http');
+var players = {};
 
 // Create Socket Server
 var server = http.createServer(function(request, response) {
-    console.log((new Date()) + ' Received request for ' + request.url);
+    console.log(timestamp() + ' Received request for ' + request.url);
     response.writeHead(404);
     response.end();
 });
 
 // Listen to new connections
 server.listen(8000, function() {
-    console.log('[' + (new Date()).toISOString() + ']' + ' Server is listening on port 8000');
+    console.log(timestamp() + ' Server is listening on port 8000');
 });
 
 wsServer = new WebSocketServer({
@@ -25,7 +26,7 @@ wsServer = new WebSocketServer({
     // facilities built into the protocol and the browser.  You should 
     // *always* verify the connection's origin and decide whether or not 
     // to accept it. 
-    autoAcceptConnections: true
+    //autoAcceptConnections: true
 });
 
 function originIsAllowed(origin) {
@@ -34,15 +35,17 @@ function originIsAllowed(origin) {
 }
 
 wsServer.on('request', function(request) {
+    console.log("received something");
+
     if (!originIsAllowed(request.origin)) {
         // Make sure we only accept requests from an allowed origin 
         request.reject();
-        console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
+        console.log(timestamp() + ' Connection from origin ' + request.origin + ' rejected.');
         return;
     }
 
-    var connection = request.accept('echo-protocol', request.origin);
-    console.log((new Date()) + ' Connection accepted.');
+    var connection = request.accept(null, request.origin);
+    console.log(timestamp() + ' Connection accepted.');
     // Connection Message
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
@@ -55,6 +58,10 @@ wsServer.on('request', function(request) {
     });
     // Connection Close
     connection.on('close', function(reasonCode, description) {
-        console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+        console.log(timestamp() + ' Peer ' + connection.remoteAddress + ' disconnected.');
     });
 });
+
+function timestamp() {
+    return '[' + (new Date()).toISOString() + ']';
+}
