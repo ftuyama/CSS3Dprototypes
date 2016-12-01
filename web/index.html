@@ -3,38 +3,51 @@
 
 <head>
     <meta charset=utf-8>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Kart-Race</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Jquery core JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <!-- Navbar -->
+    <div id="navbar"></div>
+    <script>
+        $("#navbar").load('/navbar.html');
+        $("html").click(function() {
+            $('body').css('background-image', "url(background.1.png)");
+        });
+    </script>
+    <!-- Navbar -->
 </head>
 
 <body>
+    <!-- Game Screen Environment -->
     <div id="game">
-        <input type=checkbox id=toggle3d checked>3D - <input type=checkbox id=toggleview checked>3<sup>rd</sup> person
-        <div id=viewport>
-            <div id=camera>
-                <div id=scenewrapper>
-                    <div id=scene>
-                        <div id=kartwrapper2>
-                            <img src=kart2.png id=kart2>
-                        </div>
-                        <div id=kartwrapper>
-                            <img src=kart.png id=kart>
-                        </div>
-                        <div id=treewrapper>
-                            <img src=tree.png id=tree>
-                        </div>
-                        <div id=track>
-                            <img src=bg.png height=4000>
+        <div class="well">
+            <h2>Mario Kart Online</h2>
+            <label for=toggle3d>3D</label><input type=checkbox id=toggle3d checked>
+            <label for=toggleview>3<sup>rd</sup> person</label><input type=checkbox id=toggleview checked>
+            <div id=viewport>
+                <div id=camera>
+                    <div id=scenewrapper>
+                        <div id=scene>
+                            <div id=kartwrapper2><img src=kart2.png id=kart2> </div>
+                            <div id=kartwrapper><img src=kart.png id=kart></div>
+                            <div id=treewrapper><img src=tree.png id=tree></div>
+                            <div id=track><img src=bg.png height=4000> </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <audio src=music.mp3 loop controls></audio>
         </div>
-        <audio src=music.mp3 loop controls></audio>
-
         <link href='engine.css' rel='stylesheet' type='text/css'>
-
         <script src="engine.js"></script>
     </div>
+    <!-- Game Screen Environment -->
 </body>
 
 </html>

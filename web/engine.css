@@ -3,6 +3,25 @@
     box-sizing: border-box;
 }
 
+body {
+    background: url(background.1.png) no-repeat center center fixed;
+    background-size: cover;
+}
+
+.well {
+    background-color: lightblue;
+    width: 640px;
+}
+
+.well>h2 {
+    margin: 0px;
+    text-align: center;
+}
+
+#navbar {
+    z-index: 1000;
+}
+
 #game {
     padding-top: 100px;
     padding-left: 400px;

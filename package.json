@@ -8,8 +8,10 @@
         "cookie-parser": "^1.4.3",
         "express": "4.14.0",
         "express-session": "^1.14.1",
+        "http": "0.0.0",
         "nodemon": "^1.10.2",
-        "request": "^2.75.0"
+        "request": "^2.75.0",
+        "websocket": "^1.0.23"
     },
     "devDependencies": {},
     "scripts": {

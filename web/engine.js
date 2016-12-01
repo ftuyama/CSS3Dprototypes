@@ -26,15 +26,13 @@ setInterval(function() {
     } else if (u) {
         if (speed < 0) speed += 1;
         speed += .2;
-        if (speed > max_speed) {
+        if (speed > max_speed)
             speed = max_speed;
-        }
     } else if (d) {
         if (speed > 0) speed -= 1;
         speed -= .2;
-        if (speed < -max_speed) {
+        if (speed < -max_speed)
             speed = -max_speed;
-        }
     } else {
         if (speed > 0) speed -= .5;
         if (speed < 0) speed += .5

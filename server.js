@@ -4,7 +4,6 @@
   ===========================================================================
 */
 /* Core Modules */
-var request = require('request');
 var express = require('express');
 var fs = require("fs");
 var app = express();
@@ -12,10 +11,12 @@ var app = express();
 // Configuração das rotas principais
 app.use(express.static(__dirname));
 app.use(express.static(__dirname + '/assets'));
+app.use(express.static(__dirname + '/public'));
 app.use(express.static(__dirname + '/web'));
 app.get('/', function(req, res) {
     res.send(fs.readFileSync("web/index.html", "utf8"));
-})
+});
+require('./socket');
 
 // set the port of our application
 // process.env.PORT lets the port be set by Heroku
