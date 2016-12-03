@@ -1,6 +1,7 @@
 toggle3d.checked = true;
 toggleview.checked = true;
 online.checked = true;
+debug.checked = false;
 
 // Keyboard input (see http://xem.github.io/articles/#jsgamesinputs)
 u = r = d = l = 0;
@@ -51,7 +52,7 @@ function start() {
         pos_y += speed * Math.cos(angle_z);
         pos_x += speed * Math.sin(angle_z);
 
-        if (online.checked && id != undefined)
+        if (online.checked)
             sendMsg(JSON.stringify({
                 'msgId': 2,
                 'playerId': id,

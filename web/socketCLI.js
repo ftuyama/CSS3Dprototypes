@@ -29,14 +29,14 @@ function initWebSocket() {
     };
 
     ws.onmessage = function(evt) {
-        if (!online) return;
+        if (!online.checked) return;
         var msg = JSON.parse(evt.data);
-        console.log(msg);
+        var playerId = msg.playerId;
+        if (debug.checked)
+            console.log(msg);
         switch (msg.msgId) {
             case 1:
-                id = msg.playerId;
-                pos_x = msg.x;
-                pos_y = msg.y;
+                id = playerId, pos_x = msg.x, pos_y = msg.y;
                 addKart(id);
                 start();
                 break;
@@ -44,8 +44,14 @@ function initWebSocket() {
                 updatePlayer(msg);
                 break;
             case 3:
-                removeKart(msg.playerId);
-                players[msg.playerId] = undefined;
+                showSnackBar("Player " + (playerId + 1) + " disconnected");
+                removeKart(playerId);
+                players[playerId] = undefined;
+                break;
+            case 4:
+                ws.close();
+                initWebSocket();
+                break;
             default:
                 break;
         }
@@ -64,6 +70,7 @@ function updatePlayer(msg) {
         players.push(undefined);
     if (players[playerId] == undefined) {
         players[playerId] = new Player(playerId, msg.x, msg.y);
+        showSnackBar("Player " + (playerId + 1) + " connected");
         addKart(playerId);
     } else {
         players[playerId].x = msg.x;
