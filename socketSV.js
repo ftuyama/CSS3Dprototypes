@@ -5,7 +5,16 @@
 // New WebSocket Communication
 var WebSocketServer = require('websocket').server;
 var http = require('http');
-var players = {};
+var players = [];
+
+function Player(id, connection, lastAlive) {
+    this.id = id;
+    this.connection = connection;
+    var pos = getPositions(id);
+    this.x = pos[0];
+    this.y = pos[1];
+    this.lastAlive = lastAlive;
+};
 
 // Create Socket Server
 var server = http.createServer(function(request, response) {
@@ -21,47 +30,107 @@ server.listen(8000, function() {
 
 wsServer = new WebSocketServer({
     httpServer: server,
-    // You should not use autoAcceptConnections for production 
-    // applications, as it defeats all standard cross-origin protection 
-    // facilities built into the protocol and the browser.  You should 
-    // *always* verify the connection's origin and decide whether or not 
-    // to accept it. 
-    //autoAcceptConnections: true
 });
-
-function originIsAllowed(origin) {
-    // put logic here to detect whether the specified origin is allowed. 
-    return true;
-}
 
 wsServer.on('request', function(request) {
     console.log("received something");
 
-    if (!originIsAllowed(request.origin)) {
-        // Make sure we only accept requests from an allowed origin 
-        request.reject();
-        console.log(timestamp() + ' Connection from origin ' + request.origin + ' rejected.');
-        return;
-    }
-
     var connection = request.accept(null, request.origin);
     console.log(timestamp() + ' Connection accepted.');
+
+    var playerId = connectPlayer(connection, timestamp());
+    connection.sendUTF(JSON.stringify({
+        'msgId': 1,
+        'playerId': playerId,
+        'x': players[playerId].x,
+        'y': players[playerId].y
+    }));
+
+
     // Connection Message
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
             console.log('Received Message: ' + message.utf8Data);
-            connection.sendUTF(message.utf8Data);
-        } else if (message.type === 'binary') {
-            console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
-            connection.sendBytes(message.binaryData);
+            message = JSON.parse(message.utf8Data);
+
+            // update
+            playerId = message.playerId;
+            players[playerId].x = message.x;
+            players[playerId].y = message.y;
+            players[playerId].timestamp = timestamp();
+
+            var player = connection.playerId;
+            if (player == undefined) {
+                console.log("Erro: player não encontrado");
+                return;
+            }
+
+            // broadcast
+            broadcast(player, {
+                'msgId': 2,
+                'playerId': playerId,
+                'x': message.x,
+                'y': message.y
+            });
         }
     });
+
     // Connection Close
     connection.on('close', function(reasonCode, description) {
         console.log(timestamp() + ' Peer ' + connection.remoteAddress + ' disconnected.');
+
+        var player = connection.playerId;
+        if (player == undefined) {
+            console.log("Erro: tentando fechar conexão inexistente");
+            return;
+        }
+
+        players[player.playerId] = undefined;
+
+        // broadcast
+        broadcast(player, {
+            'msgId': 3,
+            'playerId': player.playerId
+        });
     });
 });
 
+function broadcast(ori_player, msg) {
+    players.forEach(function(player) {
+        if (player != undefined && player.playerId != ori_player.playerId)
+            player.connection.sendUTF(JSON.stringify(msg));
+    });
+}
+
+function connectPlayer(connection, timestamp) {
+    for (var i = 0; i < players.length; i++) {
+        if (players[i] == undefined) {
+            connection.playerId = i;
+            players[i] = new Player(i, connection, timestamp);
+            return i;
+        }
+    }
+    var index = players.length;
+    connection.playerId = index;
+    players.push(new Player(index, connection, timestamp));
+    return index;
+}
+
+function getPositions(id) {
+    switch (id) {
+        case 0:
+            return [-1740, -1500];
+        case 1:
+            return [-1650, -1500];
+        default:
+            return [-1600, -1500];
+    }
+}
+
+function formattedTimestamp() {
+    return '[' + (timestamp().toISOString()) + ']';
+}
+
 function timestamp() {
-    return '[' + (new Date()).toISOString() + ']';
+    return new Date();
 }

@@ -2,7 +2,7 @@
     Exame de CES-35
     Aplicação de Sockets
  */
-var ws, connected;
+var ws, connected, id;
 
 // New WebSocket Communication
 function initWebSocket() {
@@ -15,11 +15,11 @@ function initWebSocket() {
     // Let us open a web socket
     ws = new WebSocket("ws://localhost:8000");
     connected = true;
-    showSnackBar("Connection is open...");
 
     ws.onopen = function() {
         // Web Socket is connected, send data using send()
-        ws.send("Message to send");
+        // ws.send("Message to send");
+        showSnackBar("Connection is open...");
     };
 
     ws.onerror = function(error) {
@@ -28,7 +28,25 @@ function initWebSocket() {
     };
 
     ws.onmessage = function(evt) {
-        var received_msg = evt.data;
+        var msg = JSON.parse(evt.data);
+        console.log(msg);
+        switch (msg.msgId) {
+            case 1:
+                id = msg.playerId;
+                pos_x = msg.x;
+                pos_y = msg.y;
+                addKart(id);
+                start();
+                break;
+            case 2:
+                updatePlayer(msg);
+                break;
+            case 3:
+                removeKart(msg.playerId);
+                players[msg.playerId] = undefined;
+            default:
+                break;
+        }
     };
 
     ws.onclose = function() {
@@ -36,6 +54,19 @@ function initWebSocket() {
         connected = false;
         showSnackBar("Connection is closed...");
     };
+}
+
+function updatePlayer(msg) {
+    var playerId = msg.playerId;
+    while (playerId >= players.length - 1)
+        players.push(undefined);
+    if (players[playerId] == undefined) {
+        players[playerId] = new Player(playerId, msg.x, msg.y);
+        addKart(playerId);
+    } else {
+        players[playerId].x = msg.x;
+        players[playerId].y = msg.y;
+    }
 }
 
 function sendMsg(package) {
