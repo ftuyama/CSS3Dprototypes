@@ -6,11 +6,12 @@
 var WebSocketServer = require('websocket').server;
 var http = require('http');
 var players = [];
+var debug = false;
 
-function Player(id, connection, lastAlive) {
-    this.id = id;
+function Player(playerId, connection, lastAlive) {
+    this.playerId = playerId;
     this.connection = connection;
-    var pos = getPositions(id);
+    var pos = getPositions(playerId);
     this.x = pos[0];
     this.y = pos[1];
     this.lastAlive = lastAlive;
@@ -18,14 +19,14 @@ function Player(id, connection, lastAlive) {
 
 // Create Socket Server
 var server = http.createServer(function(request, response) {
-    console.log(timestamp() + ' Received request for ' + request.url);
+    console.log(formattedTimestamp() + ' Received request for ' + request.url);
     response.writeHead(404);
     response.end();
 });
 
 // Listen to new connections
 server.listen(8000, function() {
-    console.log(timestamp() + ' Server is listening on port 8000');
+    console.log(formattedTimestamp() + ' Server is listening on port 8000');
 });
 
 wsServer = new WebSocketServer({
@@ -36,7 +37,7 @@ wsServer.on('request', function(request) {
     console.log("received something");
 
     var connection = request.accept(null, request.origin);
-    console.log(timestamp() + ' Connection accepted.');
+    console.log(formattedTimestamp() + ' Player ' + connection.remoteAddress + ' connected.');
 
     var playerId = connectPlayer(connection, timestamp());
     connection.sendUTF(JSON.stringify({
@@ -50,16 +51,17 @@ wsServer.on('request', function(request) {
     // Connection Message
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            console.log('Received Message: ' + message.utf8Data);
+            if (debug)
+                console.log('Received Message: ' + message.utf8Data);
             message = JSON.parse(message.utf8Data);
 
             // update
             playerId = message.playerId;
             players[playerId].x = message.x;
             players[playerId].y = message.y;
-            players[playerId].timestamp = timestamp();
+            players[playerId].lastAlive = timestamp();
 
-            var player = connection.playerId;
+            var player = connection.player;
             if (player == undefined) {
                 console.log("Erro: player não encontrado");
                 return;
@@ -77,9 +79,9 @@ wsServer.on('request', function(request) {
 
     // Connection Close
     connection.on('close', function(reasonCode, description) {
-        console.log(timestamp() + ' Peer ' + connection.remoteAddress + ' disconnected.');
+        console.log(formattedTimestamp() + ' Player ' + connection.remoteAddress + ' disconnected.');
 
-        var player = connection.playerId;
+        var player = connection.player;
         if (player == undefined) {
             console.log("Erro: tentando fechar conexão inexistente");
             return;
@@ -97,22 +99,23 @@ wsServer.on('request', function(request) {
 
 function broadcast(ori_player, msg) {
     players.forEach(function(player) {
-        if (player != undefined && player.playerId != ori_player.playerId)
+        if (player != undefined && player.playerId != ori_player.playerId) {
             player.connection.sendUTF(JSON.stringify(msg));
+        }
     });
 }
 
 function connectPlayer(connection, timestamp) {
     for (var i = 0; i < players.length; i++) {
         if (players[i] == undefined) {
-            connection.playerId = i;
             players[i] = new Player(i, connection, timestamp);
+            connection.player = players[i];
             return i;
         }
     }
     var index = players.length;
-    connection.playerId = index;
     players.push(new Player(index, connection, timestamp));
+    connection.player = players[index];
     return index;
 }
 

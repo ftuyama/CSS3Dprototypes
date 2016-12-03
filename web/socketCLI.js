@@ -13,7 +13,8 @@ function initWebSocket() {
     }
 
     // Let us open a web socket
-    ws = new WebSocket("ws://localhost:8000");
+    var domain = window.location.hostname;
+    ws = new WebSocket("ws://" + domain + ":8000");
     connected = true;
 
     ws.onopen = function() {
@@ -28,6 +29,7 @@ function initWebSocket() {
     };
 
     ws.onmessage = function(evt) {
+        if (!online) return;
         var msg = JSON.parse(evt.data);
         console.log(msg);
         switch (msg.msgId) {

@@ -15,8 +15,8 @@ speed = 0;
 max_speed = 18;
 
 // Players
-function Player(id, x, y) {
-    this.id = id;
+function Player(playerId, x, y) {
+    this.playerId = playerId;
     this.x = x;
     this.y = y;
 };
@@ -51,7 +51,7 @@ function start() {
         pos_y += speed * Math.cos(angle_z);
         pos_x += speed * Math.sin(angle_z);
 
-        if (i++ % 10 == 0 && online.checked && id != undefined)
+        if (online.checked && id != undefined)
             sendMsg(JSON.stringify({
                 'msgId': 2,
                 'playerId': id,
@@ -61,7 +61,7 @@ function start() {
 
         scene.style.transform = "rotateZ(" + angle_z + "rad) translateX(" + pos_x + "px) translateY(" + pos_y + "px)";
         my_kart.style.transform = "translateX(" + (-pos_x - 15) + "px) translateY(" + (-pos_y - 15) + "px) translateZ(14px) rotateZ(" + -angle_z + "rad)";
-        // updateKarts(players, angle_z);
+        updateKarts(players, angle_z);
         tree.style.transform = "rotateZ(" + -angle_z + "rad) rotateX(-90deg)";
         viewport.style.backgroundPosition = (angle_z * 300) + "px top";
     }, 33);
@@ -70,13 +70,14 @@ function start() {
 function updateKarts(players, angle_z) {
     players.forEach(function(player) {
         if (player != undefined && player.playerId != id) {
-            $("#kartwrapper" + player.playerId).style.transform = "translateX(" + (-player.x - 15) + "px) translateY(" + (-player.y - 15) + "px) translateZ(14px) rotateZ(" + -angle_z + "rad)";
+            kart = document.getElementById("kartwrapper" + player.playerId);
+            kart.style.transform = "translateX(" + (-player.x - 15) + "px) translateY(" + (-player.y - 15) + "px) translateZ(14px) rotateZ(" + -angle_z + "rad)";
         }
     });
 }
 
 function addKart(id) {
-    $("#scene").append("<div id=kartwrapper" + id + "><img src=kart" + id + ".png id=kart" + id + "></div>");
+    $("#scene").prepend("<div id=kartwrapper" + id + " class='kartwrapper'><img src=kart" + id + ".png id=kart" + id + " class='kart'></div>");
 }
 
 function removeKart(id) {

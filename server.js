@@ -11,7 +11,7 @@ var app = express();
 // Configuração das rotas principais
 app.use(express.static(__dirname));
 app.use(express.static(__dirname + '/assets'));
-app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/static'));
 app.use(express.static(__dirname + '/web'));
 app.use(express.static(__dirname + '/web/components'));
 app.get('/', function(req, res) {

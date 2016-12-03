@@ -54,14 +54,12 @@ body {
     transform-origin: 0 0;
 }
 
-#kartwrapper,
-#kartwrapper2 {
+.kartwrapper {
     position: absolute;
     transform-origin: center center;
 }
 
-#kart,
-#kart2 {
+.kart {
     width: 30px;
     transition: transform .4s, opacity .4s;
     opacity: 0;
@@ -84,11 +82,7 @@ body {
     transform: translateZ(400px);
 }
 
-#toggle3d:checked~#viewport #kart {
-    transform: rotateX(-90deg);
-}
-
-#toggle3d:checked~#viewport #kart2 {
+#toggle3d:checked~#viewport .kart {
     transform: rotateX(-90deg);
 }
 
@@ -96,10 +90,6 @@ body {
     transform: translateZ(200px)
 }
 
-#toggleview:checked~#viewport #camera #scene #kart {
-    opacity: 1;
-}
-
-#toggleview:checked~#viewport #camera #scene #kart2 {
+#toggleview:checked~#viewport #camera #scene .kart {
     opacity: 1;
 }
