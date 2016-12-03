@@ -7,7 +7,6 @@ var ws, connected, id;
 // New WebSocket Communication
 function initWebSocket() {
     if (!"WebSocket" in window) {
-        // The browser doesn't support WebSocket
         showSnackBar("WebSocket NOT supported by your Browser!");
         return;
     }
@@ -18,13 +17,10 @@ function initWebSocket() {
     connected = true;
 
     ws.onopen = function() {
-        // Web Socket is connected, send data using send()
-        // ws.send("Message to send");
         showSnackBar("Connection is open...");
     };
 
     ws.onerror = function(error) {
-        // an error occurred when sending/receiving data
         showSnackBar("Deu errado...");
     };
 
@@ -32,21 +28,19 @@ function initWebSocket() {
         if (!online.checked) return;
         var msg = JSON.parse(evt.data);
         var playerId = msg.playerId;
-        if (debug.checked)
-            console.log(msg);
+        if (debug.checked) console.log(msg);
+
         switch (msg.msgId) {
             case 1:
-                id = playerId, pos_x = msg.x, pos_y = msg.y;
-                addKart(id);
-                start();
+                // Own connection to the game
+                addKart(playerId);
+                start(msg);
                 break;
             case 2:
                 updatePlayer(msg);
                 break;
             case 3:
-                showSnackBar("Player " + (playerId + 1) + " disconnected");
-                removeKart(playerId);
-                players[playerId] = undefined;
+                removePlayer(playerId);
                 break;
             case 4:
                 ws.close();
@@ -58,12 +52,12 @@ function initWebSocket() {
     };
 
     ws.onclose = function() {
-        // websocket is closed.
         connected = false;
         showSnackBar("Connection is closed...");
     };
 }
 
+// Update or create player with message info
 function updatePlayer(msg) {
     var playerId = msg.playerId;
     while (playerId >= players.length - 1)
@@ -76,6 +70,13 @@ function updatePlayer(msg) {
         players[playerId].x = msg.x;
         players[playerId].y = msg.y;
     }
+}
+
+// Remove player
+function removePlayer(playerId) {
+    showSnackBar("Player " + (playerId + 1) + " disconnected");
+    removeKart(playerId);
+    players[playerId] = undefined;
 }
 
 function sendMsg(package) {

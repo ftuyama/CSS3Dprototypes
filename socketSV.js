@@ -7,6 +7,7 @@ var WebSocketServer = require('websocket').server;
 var http = require('http');
 var players = [];
 var debug = false;
+var session = 0;
 
 function Player(playerId, connection, lastAlive) {
     this.playerId = playerId;
@@ -14,8 +15,10 @@ function Player(playerId, connection, lastAlive) {
     var position = getPositions(playerId);
     this.x = position[0];
     this.y = position[1];
+    this.session = session;
     this.ip = connection.remoteAddress;
     this.lastAlive = lastAlive;
+    session++;
 };
 
 // Create Socket Server
@@ -36,18 +39,20 @@ wsServer = new WebSocketServer({
 });
 
 wsServer.on('request', function(request) {
-    var connection = request.accept(null, request.origin);
 
-    var playerId = connectPlayer(connection, timestamp());
+    // Connection message
+    var connection = request.accept(null, request.origin);
+    var player = connectPlayer(connection, timestamp());
     connection.sendUTF(JSON.stringify({
         'msgId': 1,
-        'playerId': playerId,
-        'x': players[playerId].x,
-        'y': players[playerId].y
+        'playerId': player.playerId,
+        'x': player.x,
+        'y': player.y,
+        'session': player.session
     }));
 
 
-    // Connection Message
+    // Game - Player Position Message
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
             message = JSON.parse(message.utf8Data);
@@ -60,7 +65,11 @@ wsServer.on('request', function(request) {
             }
 
             // Player não pertence mais à conexão
-            if (connection.remoteAddress != player.ip) {
+            if (connection.remoteAddress != player.ip ||
+                players[player.playerId] == undefined ||
+                message.session != players[player.playerId].session) {
+                // A sacada é ver se a sessão da mensagem bate com o 
+                //  número de sessão daquele jogador no servidor
                 console.log("Erro: player reconectando");
                 connection.sendUTF(JSON.stringify({
                     'msgId': 4
@@ -68,9 +77,8 @@ wsServer.on('request', function(request) {
                 return;
             }
 
+            // Update and broadcast position
             updatePlayer(message);
-
-            // broadcast
             broadcast(player, {
                 'msgId': 2,
                 'playerId': playerId,
@@ -91,17 +99,41 @@ wsServer.on('request', function(request) {
     });
 });
 
+/*
+    ===========================================================================
+                            Sockets main events
+    ===========================================================================
+*/
+
 function updatePlayer(message) {
     if (debug) console.log('Received Message: ' + message);
-    // update
+    // update player
     playerId = message.playerId;
     players[playerId].x = message.x;
     players[playerId].y = message.y;
     players[playerId].lastAlive = timestamp();
 }
 
+function connectPlayer(connection, timestamp) {
+    console.log(formattedTimestamp() + ' Player ' + connection.remoteAddress + ' connected.');
+    // allocate new player on poll
+    for (var i = 0; i < players.length; i++) {
+        if (players[i] == undefined) {
+            players[i] = new Player(i, connection, timestamp);
+            connection.player = players[i];
+            return players[i];
+        }
+    }
+    // create new player on poll
+    var index = players.length;
+    players.push(new Player(index, connection, timestamp));
+    connection.player = players[index];
+    return players[index];
+}
+
 function disconnectPlayer(player) {
-    console.log(formattedTimestamp() + ' Player ' + connection.remoteAddress + ' disconnected.');
+    console.log(formattedTimestamp() + ' Player ' + player.connection.remoteAddress + ' disconnected.');
+    // remove player from poll
     players[player.playerId] = undefined;
 
     // broadcast
@@ -111,6 +143,14 @@ function disconnectPlayer(player) {
     });
 }
 
+
+/*
+    ===========================================================================
+                         Sockets actions events
+    ===========================================================================
+*/
+
+// Check each 2 seconds if players are alive
 function liveness() {
     setInterval(function() {
         players.forEach(function(player) {
@@ -121,10 +161,7 @@ function liveness() {
     }, 2000);
 }
 
-function isInactive(player) {
-    return (timestamp() - player.lastAlive) > 2000;
-}
-
+// Broadcast message
 function broadcast(ori_player, msg) {
     players.forEach(function(player) {
         if (player != undefined && player.playerId != ori_player.playerId) {
@@ -133,20 +170,15 @@ function broadcast(ori_player, msg) {
     });
 }
 
-function connectPlayer(connection, timestamp) {
-    console.log(formattedTimestamp() + ' Player ' + connection.remoteAddress + ' connected.');
-    for (var i = 0; i < players.length; i++) {
-        if (players[i] == undefined) {
-            players[i] = new Player(i, connection, timestamp);
-            connection.player = players[i];
-            return i;
-        }
-    }
-    var index = players.length;
-    players.push(new Player(index, connection, timestamp));
-    connection.player = players[index];
-    return index;
+function isInactive(player) {
+    return (timestamp() - player.lastAlive) > 2000;
 }
+
+/*
+    ===========================================================================
+                            Auxilliary functions
+    ===========================================================================
+*/
 
 function getPositions(id) {
     switch (id) {
