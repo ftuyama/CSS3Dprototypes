@@ -2,7 +2,7 @@
     Exame de CES-35
     Aplicação de Sockets
  */
-var ws, connected, id;
+var ws, id, connected, reconnect = false;
 
 // New WebSocket Communication
 function initWebSocket() {
@@ -14,9 +14,9 @@ function initWebSocket() {
     // Let us open a web socket
     var domain = window.location.hostname;
     ws = new WebSocket("ws://" + domain + ":8000");
-    connected = true;
 
     ws.onopen = function() {
+        connected = true;
         showSnackBar("Connection is open...");
     };
 
@@ -43,8 +43,9 @@ function initWebSocket() {
                 removePlayer(playerId);
                 break;
             case 4:
+                clearPlayers();
+                reconnect = true;
                 ws.close();
-                initWebSocket();
                 break;
             default:
                 break;
@@ -54,8 +55,15 @@ function initWebSocket() {
     ws.onclose = function() {
         connected = false;
         showSnackBar("Connection is closed...");
+        if (reconnect) tryReconnect();
     };
 }
+
+/*
+    ===========================================================================
+                            Managing Players
+    ===========================================================================
+*/
 
 // Update or create player with message info
 function updatePlayer(msg) {
@@ -78,8 +86,25 @@ function removePlayer(playerId) {
     removeKart(playerId);
     players[playerId] = undefined;
 }
+// Remove player
+function clearPlayers() {
+    clearKarts();
+    players = [];
+}
 
-function sendMsg(package) {
+/*
+    ===========================================================================
+                            Connection events
+    ===========================================================================
+*/
+
+function tryReconnect() {
+    reconnect = false;
+    //try to reconnect in 1 second
+    setTimeout(function() { initWebSocket() }, 1000);
+}
+
+function sendMsg(message) {
     if (connected)
-        ws.send(package);
+        ws.send(message);
 }

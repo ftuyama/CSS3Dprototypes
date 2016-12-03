@@ -16,7 +16,6 @@ function Player(playerId, connection, lastAlive) {
     this.x = position[0];
     this.y = position[1];
     this.session = session;
-    this.ip = connection.remoteAddress;
     this.lastAlive = lastAlive;
     session++;
 };
@@ -65,12 +64,7 @@ wsServer.on('request', function(request) {
             }
 
             // Player não pertence mais à conexão
-            if (connection.remoteAddress != player.ip ||
-                players[player.playerId] == undefined ||
-                message.session != players[player.playerId].session) {
-                // A sacada é ver se a sessão da mensagem bate com o 
-                //  número de sessão daquele jogador no servidor
-                console.log("Erro: player reconectando");
+            if (hasSameSession(connection, player)) {
                 connection.sendUTF(JSON.stringify({
                     'msgId': 4
                 }));
@@ -85,17 +79,19 @@ wsServer.on('request', function(request) {
                 'x': message.x,
                 'y': message.y
             });
+
         }
     });
 
     // Connection Close
     connection.on('close', function(reasonCode, description) {
         var player = connection.player;
-        if (player == undefined) {
+        if (player == undefined || hasSameSession(connection, player)) {
             console.log("Erro: tentando fechar conexão inexistente");
             return;
         }
         disconnectPlayer(player);
+        connection.player = undefined;
     });
 });
 
@@ -115,10 +111,10 @@ function updatePlayer(message) {
 }
 
 function connectPlayer(connection, timestamp) {
-    console.log(formattedTimestamp() + ' Player ' + connection.remoteAddress + ' connected.');
     // allocate new player on poll
     for (var i = 0; i < players.length; i++) {
         if (players[i] == undefined) {
+            console.log(formattedTimestamp() + ' Player ' + i + ' connected.');
             players[i] = new Player(i, connection, timestamp);
             connection.player = players[i];
             return players[i];
@@ -132,7 +128,7 @@ function connectPlayer(connection, timestamp) {
 }
 
 function disconnectPlayer(player) {
-    console.log(formattedTimestamp() + ' Player ' + player.connection.remoteAddress + ' disconnected.');
+    console.log(formattedTimestamp() + ' Player ' + player.playerId + ' disconnected.');
     // remove player from poll
     players[player.playerId] = undefined;
 
@@ -149,6 +145,13 @@ function disconnectPlayer(player) {
                          Sockets actions events
     ===========================================================================
 */
+
+// Check if connection has same session
+function hasSameSession(connection, player) {
+    // Check if connection session has the most updated session
+    return players[player.playerId] == undefined ||
+        connection.player.session < players[player.playerId].session;
+}
 
 // Check each 2 seconds if players are alive
 function liveness() {
@@ -186,8 +189,20 @@ function getPositions(id) {
             return [-1740, -1500];
         case 1:
             return [-1650, -1500];
+        case 2:
+            return [-1740, -1450];
+        case 3:
+            return [-1650, -1450];
+        case 4:
+            return [-1740, -1400];
+        case 5:
+            return [-1650, -1400];
+        case 6:
+            return [-1740, -1350];
+        case 7:
+            return [-1650, -1350];
         default:
-            return [-1600, -1500];
+            return [-1740, -1300];
     }
 }
 

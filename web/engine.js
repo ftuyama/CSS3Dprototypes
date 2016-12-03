@@ -2,11 +2,18 @@ toggle3d.checked = true;
 toggleview.checked = true;
 online.checked = true;
 debug.checked = false;
+end = false;
 
 // Keyboard input
-u = r = d = l = 0;
-onkeyup = t = (e, v) => top['lurd************************l**r************l*d***u**u' [e.keyCode - 37]] = v;
-onkeydown = e => t(e, 1);
+u = r = d = l = shift = 0;
+onkeyup = t = (e, v) => {
+    top['lurd************************l**r************l*d***u**u' [e.keyCode - 37]] = v;
+    if (e.keyCode == 16) shift = false;
+}
+onkeydown = e => {
+    t(e, 1);
+    if (e.keyCode == 16) shift = true;
+}
 
 // Scene
 angle_x = angle_y = angle_z = 0; // rad
@@ -37,12 +44,14 @@ function init_self(msg) {
     id = msg.playerId, session = msg.session;
     pos_x = msg.x, pos_y = msg.y;
     my_kart = document.getElementById("kartwrapper" + id);
+    end = false;
 }
 
 // Game Loop
 function start(msg) {
     init_self(msg);
-    setInterval(function() {
+    var game = setInterval(function() {
+        if (end) clearInterval(game);
         game_inputs();
         game_connection();
         game_view();
@@ -72,7 +81,9 @@ function game_view() {
 
 // Manage user inputs
 function game_inputs() {
-    if (r) {
+    if (shift) {
+        speed *= 1.01
+    } else if (r) {
         angle_z -= .05;
     } else if (l) {
         angle_z += .05;
@@ -87,8 +98,10 @@ function game_inputs() {
         if (speed < -max_speed)
             speed = -max_speed;
     } else {
-        if (speed > 0) speed -= .5;
-        if (speed < 0) speed += .5
+        if (speed > max_speed)
+            speed = max_speed;
+        speed += -0.05 * speed;
+        speed *= 0.95
     }
 
     pos_y += speed * Math.cos(angle_z);
@@ -111,9 +124,18 @@ function updateKarts(players, angle_z) {
 }
 
 function addKart(id) {
-    $("#scene").prepend("<div id=kartwrapper" + id + " class='kartwrapper'><img src=kart" + id + ".png id=kart" + id + " class='kart'></div>");
+    $("#scene").prepend("<div id=kartwrapper" + id + " class='kartwrapper'><img src=karts/kart" + id % 8 + ".png id=kart" + id + " class='kart'></div>");
 }
 
 function removeKart(id) {
     $("#kartwrapper" + id).remove();
+}
+
+function clearKarts() {
+    $("#kartwrapper" + id).remove();
+    players.forEach(function(player) {
+        if (player != undefined)
+            $("#kartwrapper" + player.playerId).remove();
+    });
+    end = true;
 }
