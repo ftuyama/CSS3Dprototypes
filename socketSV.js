@@ -99,7 +99,7 @@ function connectPlayer(connection, timestamp) {
     // allocate new player on poll
     for (var i = 0; i < players.length; i++) {
         if (players[i] == undefined) {
-            console.log(formattedTimestamp() + ' Player ' + i + ' connected.');
+            console.log(formattedTimestamp() + ' Player ' + (i+1).toString() + ' connected.');
             players[i] = new Player(i, connection, timestamp);
             connection.player = players[i];
             return players[i];
@@ -109,6 +109,7 @@ function connectPlayer(connection, timestamp) {
     var index = players.length;
     players.push(new Player(index, connection, timestamp));
     connection.player = players[index];
+    console.log(formattedTimestamp() + ' Player ' + (index+1).toString() + ' connected.');
     return players[index];
 }
 
