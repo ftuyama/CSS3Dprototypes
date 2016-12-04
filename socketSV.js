@@ -4,7 +4,7 @@
  */
 // New WebSocket Communication
 var WebSocketServer = require('websocket').server;
-var http = require('http');
+var server = require('./server');
 var players = [];
 var debug = false;
 var session = 0;
@@ -20,22 +20,11 @@ function Player(playerId, connection, lastAlive) {
     session++;
 };
 
-// Create Socket Server
-var server = http.createServer(function(request, response) {
-    console.log(formattedTimestamp() + ' Received request for ' + request.url);
-    response.writeHead(404);
-    response.end();
-});
-
-// Listen to new connections
-server.listen(8000, function() {
-    console.log(formattedTimestamp() + ' Server is listening on port 8000');
-    liveness();
-});
-
+// Initialize socket server besides http server
 wsServer = new WebSocketServer({
     httpServer: server,
 });
+liveness();
 
 wsServer.on('request', function(request) {
 
