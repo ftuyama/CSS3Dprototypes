@@ -37,7 +37,7 @@ var players = [];
 */
 
 // Initialize connection
-initWebSocket();
+initConnection();
 
 // Initialize self variables
 function init_self(msg) {

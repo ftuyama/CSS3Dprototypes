@@ -2,7 +2,15 @@
     Exame de CES-35
     Aplicação de Sockets
  */
-var ws, id, connected, reconnect = false;
+var ws, id, port, connected, reconnect = false;
+
+// Discover server port to connect
+function initConnection() {
+    $.get('/port', function(res) {
+        port = res.port;
+        initWebSocket();
+    });
+}
 
 // New WebSocket Communication
 function initWebSocket() {
@@ -13,7 +21,7 @@ function initWebSocket() {
 
     // Let us open a web socket
     var domain = window.location.hostname;
-    ws = new WebSocket("ws://" + domain + ":8000");
+    ws = new WebSocket("ws://" + domain + ":" + port);
 
     ws.onopen = function() {
         connected = true;
