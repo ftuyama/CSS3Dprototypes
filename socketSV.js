@@ -184,26 +184,9 @@ function isInactive(player) {
 */
 
 function getPositions(id) {
-    switch (id) {
-        case 0:
-            return [-1740, -1500];
-        case 1:
-            return [-1650, -1500];
-        case 2:
-            return [-1740, -1450];
-        case 3:
-            return [-1650, -1450];
-        case 4:
-            return [-1740, -1400];
-        case 5:
-            return [-1650, -1400];
-        case 6:
-            return [-1740, -1350];
-        case 7:
-            return [-1650, -1350];
-        default:
-            return [-1740, -1300];
-    }
+    var x = id%2 == 0 ? -1738 : -1653;
+    var y = -1567 + id * 53;
+    return [x,y];
 }
 
 function formattedTimestamp() {
