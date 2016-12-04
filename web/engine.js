@@ -73,7 +73,8 @@ function game_connection() {
 // Manage Game view
 function game_view() {
     scene.style.transform = "rotateZ(" + angle_z + "rad) translateX(" + pos_x + "px) translateY(" + pos_y + "px)";
-    my_kart.style.transform = "translateX(" + (-pos_x - 15) + "px) translateY(" + (-pos_y - 15) + "px) translateZ(14px) rotateZ(" + -angle_z + "rad)";
+    my_kart.style.transform = "translateX(" + (-pos_x - 15) + "px) translateY(" + 
+                    (-pos_y - 15) + "px) translateZ(14px) rotateZ(" + -angle_z + "rad)";
     updateKarts(players, angle_z);
     tree.style.transform = "rotateZ(" + -angle_z + "rad) rotateX(-90deg)";
     viewport.style.backgroundPosition = (angle_z * 300) + "px top";
@@ -114,6 +115,7 @@ function game_inputs() {
     ===========================================================================
 */
 
+// Updates all karts on view
 function updateKarts(players, angle_z) {
     players.forEach(function(player) {
         if (player != undefined && player.playerId != id) {
@@ -123,14 +125,17 @@ function updateKarts(players, angle_z) {
     });
 }
 
+// Add a kart to view
 function addKart(id) {
     $("#scene").prepend("<div id=kartwrapper" + id + " class='kartwrapper'><img src=karts/kart" + id % 8 + ".png id=kart" + id + " class='kart'></div>");
 }
 
+// Remove a kart from view
 function removeKart(id) {
     $("#kartwrapper" + id).remove();
 }
 
+// Remove all karts from view
 function clearKarts() {
     $("#kartwrapper" + id).remove();
     players.forEach(function(player) {

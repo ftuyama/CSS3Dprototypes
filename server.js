@@ -12,7 +12,7 @@ var app = express();
 // process.env.PORT lets the port be set by Heroku
 var port = process.env.PORT || 8080;
 
-// Configuração das rotas principais
+// Main route configuration
 app.use(express.static(__dirname));
 app.use(express.static(__dirname + '/assets'));
 app.use(express.static(__dirname + '/static'));
@@ -27,7 +27,7 @@ app.get('/port', function(req, res) {
 
 // Initiate application server
 var server = app.listen(port, function() {
-    console.log("Example app listening at %s", server.address().port)
+    console.log("Kart-Race is now online and listening at %s", server.address().port)
 })
 
 module.exports = app;

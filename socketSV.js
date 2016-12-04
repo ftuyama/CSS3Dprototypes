@@ -1,7 +1,3 @@
-/*
-    Exame de CES-35
-    Aplicação de Sockets
- */
 // New WebSocket Communication
 var WebSocketServer = require('websocket').server;
 var server = require('./server');
@@ -45,14 +41,14 @@ wsServer.on('request', function(request) {
         if (message.type === 'utf8') {
             message = JSON.parse(message.utf8Data);
 
-            // Player associado à conexão
+            // Player associated with the connection
             var player = connection.player;
             if (player == undefined) {
-                console.log("Erro: player não encontrado");
+                console.log("Error: player not found");
                 return;
             }
 
-            // Player não pertence mais à conexão
+            // Player does not belong to session
             if (hasSameSession(connection, player)) {
                 connection.sendUTF(JSON.stringify({
                     'msgId': 4
@@ -76,7 +72,7 @@ wsServer.on('request', function(request) {
     connection.on('close', function(reasonCode, description) {
         var player = connection.player;
         if (player == undefined || hasSameSession(connection, player)) {
-            console.log("Erro: tentando fechar conexão inexistente");
+            console.log("Error: trying to close inexisting connection");
             return;
         }
         disconnectPlayer(player);

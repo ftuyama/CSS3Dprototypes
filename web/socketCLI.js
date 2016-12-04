@@ -1,7 +1,3 @@
-/*
-    Exame de CES-35
-    Aplicação de Sockets
- */
 var ws, id, port, connected, reconnect = false;
 
 // Discover server port to connect
@@ -29,7 +25,7 @@ function initWebSocket() {
     };
 
     ws.onerror = function(error) {
-        showSnackBar("Deu errado...");
+        showSnackBar("Something went wrong...");
     };
 
     ws.onmessage = function(evt) {
@@ -39,18 +35,17 @@ function initWebSocket() {
         if (debug.checked) console.log(msg);
 
         switch (msg.msgId) {
-            case 1:
-                // Own connection to the game
+            case 1: // Own connection to the game
                 addKart(playerId);
                 start(msg);
                 break;
-            case 2:
+            case 2: // Update other player position
                 updatePlayer(msg);
                 break;
-            case 3:
+            case 3: // Remove other player
                 removePlayer(playerId);
                 break;
-            case 4:
+            case 4: // Reconnection requested by server
                 clearPlayers();
                 reconnect = true;
                 ws.close();
