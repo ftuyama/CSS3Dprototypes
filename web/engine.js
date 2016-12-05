@@ -21,6 +21,7 @@ pos_x = pos_y = 0;
 speed = session = 0;
 max_speed = 18;
 fps = 33; // 1 scene each 33 ms
+world = {};
 
 // Players
 function Player(playerId, x, y) {
@@ -44,6 +45,7 @@ function init_self(msg) {
     id = msg.playerId, session = msg.session;
     pos_x = msg.x, pos_y = msg.y;
     my_kart = document.getElementById("kartwrapper" + id);
+    world = { 'width': track.children[0].width, 'height': track.children[0].height };
     end = false;
 }
 
@@ -53,6 +55,7 @@ function start(msg) {
     var game = setInterval(function() {
         if (end) clearInterval(game);
         game_inputs();
+        game_collision();
         game_connection();
         game_view();
     }, fps);
@@ -73,8 +76,8 @@ function game_connection() {
 // Manage Game view
 function game_view() {
     scene.style.transform = "rotateZ(" + angle_z + "rad) translateX(" + pos_x + "px) translateY(" + pos_y + "px)";
-    my_kart.style.transform = "translateX(" + (-pos_x - 15) + "px) translateY(" + 
-                    (-pos_y - 15) + "px) translateZ(14px) rotateZ(" + -angle_z + "rad)";
+    my_kart.style.transform = "translateX(" + (-pos_x - 15) + "px) translateY(" +
+        (-pos_y - 15) + "px) translateZ(14px) rotateZ(" + -angle_z + "rad)";
     updateKarts(players, angle_z);
     tree.style.transform = "rotateZ(" + -angle_z + "rad) rotateX(-90deg)";
     viewport.style.backgroundPosition = (angle_z * 300) + "px top";
@@ -107,6 +110,22 @@ function game_inputs() {
 
     pos_y += speed * Math.cos(angle_z);
     pos_x += speed * Math.sin(angle_z);
+}
+
+// Player bounce movement
+function bounce() {
+    pos_y -= speed * Math.cos(angle_z);
+    pos_x -= speed * Math.sin(angle_z);
+    speed = -speed;
+}
+
+// Player bounce when collides
+function game_collision() {
+    for (var i = 0; i < players.length; i++)
+        if (players[i] != undefined && distance(players[i]) < 20)
+            bounce();
+    if (outside(world))
+        bounce();
 }
 
 /*
@@ -143,4 +162,25 @@ function clearKarts() {
             $("#kartwrapper" + player.playerId).remove();
     });
     end = true;
+}
+
+/*
+    ===========================================================================
+                            Auxilliary functions
+    ===========================================================================
+*/
+
+function outside(world) {
+    x = -pos_x, y = -pos_y;
+    return x > world.width || x < 0 || y > world.height || y < 0;
+}
+
+function distance(player) {
+    return Math.dist(player.x, player.y, pos_x, pos_y);
+}
+
+Math.dist = function(x1, y1, x2, y2) {
+    if (!x2) x2 = 0;
+    if (!y2) y2 = 0;
+    return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
