@@ -44,12 +44,12 @@ wsServer.on('request', function(request) {
             // Player associated with the connection
             var player = connection.player;
             if (player == undefined) {
-                console.log("Error: player not found");
+                console.log(formattedTimestamp() + "Error: player not found.");
                 return;
             }
 
             // Player does not belong to session
-            if (hasSameSession(connection, player)) {
+            if (sessionExpired(connection, player)) {
                 connection.sendUTF(JSON.stringify({
                     'msgId': 4
                 }));
@@ -71,8 +71,12 @@ wsServer.on('request', function(request) {
     // Connection Close
     connection.on('close', function(reasonCode, description) {
         var player = connection.player;
-        if (player == undefined || hasSameSession(connection, player)) {
-            console.log("Error: trying to close inexisting connection");
+        if (sessionExpired(connection, player)) {
+            console.log(formattedTimestamp() + " Player " + (player.playerId+1).toString() +  " with expired session trying to reconnect.");
+            return;
+        }
+        if (player == undefined) {
+            console.log(formattedTimestamp() + " Error: trying to close inexisting connection.");
             return;
         }
         disconnectPlayer(player);
@@ -114,7 +118,7 @@ function connectPlayer(connection, timestamp) {
 }
 
 function disconnectPlayer(player) {
-    console.log(formattedTimestamp() + ' Player ' + player.playerId + ' disconnected.');
+    console.log(formattedTimestamp() + ' Player ' + (player.playerId+1).toString()  + ' disconnected.');
     // remove player from poll
     players[player.playerId] = undefined;
 
@@ -132,9 +136,8 @@ function disconnectPlayer(player) {
     ===========================================================================
 */
 
-// Check if connection has same session
-function hasSameSession(connection, player) {
-    // Check if connection session has the most updated session
+// Check if connection has expired
+function sessionExpired(connection, player) {
     return players[player.playerId] == undefined ||
         connection.player.session < players[player.playerId].session;
 }
